@@ -228,3 +228,62 @@ GitHub Pages hosts only static files and **does not run Express or MySQL**. To d
 ## Important development status
 
 The source files and input-validation tests were checked during preparation. A complete `npm install` and live MySQL test were **not possible in the preparation environment** because package registry access was unavailable and there was no configured local MySQL server. Follow the setup instructions above and test CRUD locally before submitting.
+
+## Ready-to-test MySQL integration (added)
+
+This GitHub repository includes the **actual Prisma MySQL schema and migration**, a
+**local MySQL Docker Compose option**, and a GitHub Actions workflow that starts a
+short-lived MySQL 8 server and tests Create, Read, Update, and Delete automatically.
+
+### Simple setup on a computer (MySQL Workbench / XAMPP)
+
+1. Install and start MySQL on a laptop/desktop. Use MySQL Workbench or phpMyAdmin to
+   run `backend/database/create_database.sql`. If using XAMPP, its database service
+   may be MariaDB rather than Oracle MySQL; use MySQL 8 for an exact match.
+2. In `backend`, copy `.env.example` to `.env` and replace the placeholders with
+   your own **local** MySQL username and password. Do not post your password in chat
+   or commit `.env` to GitHub.
+3. Open a terminal in `backend` and run `npm install`, then `npm run db:setup`.
+   Prisma creates the **Student** table in the MySQL database.
+4. Run `npm start`. Visit `http://localhost:5000/api/health` to see whether the
+   database is connected.
+5. In a second terminal open `frontend`, run `npm install` and `npm run dev`, then
+   visit `http://localhost:5173`.
+6. After both servers are running, open a third terminal in `backend` and run
+   `npm run test:crud`. It creates a **fictional test record**, reads and updates
+   it, then deletes it. You should see **PASS** messages for each operation.
+
+### Optional: start MySQL with Docker Desktop
+
+If Docker Desktop is installed instead of a local MySQL server:
+
+```bash
+# from repository root
+cp .env.mysql.example .env.mysql
+# edit .env.mysql and replace BOTH placeholder passwords
+# then run:
+docker compose --env-file .env.mysql -f compose.mysql.yml up -d
+```
+
+Copy `backend/.env.example` to `backend/.env` and set the database URL using
+`john_app` as the username and the **MYSQL_APP_PASSWORD** you set in `.env.mysql`:
+
+```env
+DATABASE_URL="mysql://john_app:YOUR_APP_PASSWORD@127.0.0.1:3306/john_lanuza_students"
+PORT=5000
+```
+
+Then run `npm install`, `npm run db:setup`, and `npm start` in `backend` as above.
+The Docker Compose volume stores records between restarts. Keep `.env.mysql`
+and `backend/.env` private; both are excluded from Git.
+
+### Testing through GitHub Actions (does not host your database)
+
+Open the repository's **Actions** tab and select **MySQL + Prisma CRUD tests**.
+It automatically starts a *temporary* MySQL 8 database, runs migrations,
+performs the CRUD smoke test, and builds the React frontend. A green check
+confirms the project worked in that test environment; it **does not** mean a
+permanent online MySQL database or publicly hosted live app exists.
+
+This classroom demo has no authentication. Use **fictional student records only**
+and do not expose the backend directly to the internet as-is.
