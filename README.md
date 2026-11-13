@@ -4,7 +4,6 @@
 **Contact:** johnmelbertlanuza22@gmail.com  
 **Course activity:** Integrative Programming and Technologies II — ORM/CRUD integration
 
-This is an original school project based on the *assignment requirements* and the type of project structure shown in class. It is not a copy of another student's source code.
 
 ## Project description
 
