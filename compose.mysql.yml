@@ -1,0 +1,22 @@
+# Optional: Run a local MySQL 8 database with Docker Desktop.
+# Requires a private .env.mysql file. No passwords are stored in this repo.
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env.mysql}
+      MYSQL_DATABASE: john_lanuza_students
+      MYSQL_USER: john_app
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:?Set MYSQL_APP_PASSWORD in .env.mysql}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - student_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+volumes:
+  student_mysql_data:
