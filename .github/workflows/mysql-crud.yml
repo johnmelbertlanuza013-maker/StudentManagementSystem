@@ -1,0 +1,63 @@
+name: MySQL + Prisma CRUD tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  mysql-crud:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: example_ci_root_password
+          MYSQL_DATABASE: john_lanuza_students
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -pexample_ci_root_password --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      # Test-only password for GitHub's short-lived isolated MySQL service.
+      DATABASE_URL: mysql://root:example_ci_root_password@127.0.0.1:3306/john_lanuza_students
+      PORT: 5000
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install --no-audit --no-fund
+      - name: Run validation tests
+        working-directory: backend
+        run: npm test
+      - name: Generate Prisma client and create MySQL tables
+        working-directory: backend
+        run: npm run db:setup
+      - name: Start Express and check CRUD against real MySQL
+        working-directory: backend
+        run: |
+          node src/server.js > /tmp/lanuza-api.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:5000/api/health > /dev/null; then
+              npm run test:crud
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/lanuza-api.log
+          exit 1
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install --no-audit --no-fund
+      - name: Build React frontend
+        working-directory: frontend
+        run: npm run build
