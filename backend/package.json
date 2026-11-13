@@ -1,0 +1,24 @@
+{
+  "name": "john-melbert-lanuza-orm-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Express and Prisma ORM v6 API for a student management system",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:setup": "prisma generate && prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {"node": ">=20.19.0"},
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "cors": "2.8.5",
+    "dotenv": "16.6.1",
+    "express": "4.21.2"
+  },
+  "devDependencies": {"prisma": "6.19.3"}
+}
